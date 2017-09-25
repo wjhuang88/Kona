@@ -9,37 +9,24 @@ import com.lmax.disruptor.dsl.ProducerType
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import java.io.Closeable
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
 import kotlin.coroutines.experimental.CoroutineContext
 
-open class AsyncTask<T> {
-    @JvmField internal var data: T? = null
-    internal lateinit var handler: suspend (T?) -> Any
-    internal lateinit var errorHandler: (Exception) -> Unit
-    private val chan = Channel<Any>()
-
-    fun start(context: CoroutineContext) = launch(context) {
-        try {
-            val ret = handler(data)
-            chan.send(ret)
-        } catch (e: Exception) {
-            errorHandler(e)
-        }
-    }
-
-    suspend fun await() = chan.receive()
-
-    fun end() = chan.close()
+open internal class AsyncTask<T>(private var data: T, private var handler: (T) -> Any) {
+    fun start() = handler(data)
 }
 
-class DisruptorExecutor<T>(multiProducer: Boolean = false) : Closeable {
+internal class DisruptorExecutor<T>(executor: Executor, multiProducer: Boolean = false) : Closeable {
 
     private lateinit var task: AsyncTask<T>
 
+    @Suppress("deprecation")
     private val disruptor = Disruptor<AsyncTaskWrapper<T>>(
             EventFactory { AsyncTaskWrapper<T>() },
             1024,
-            Executors.defaultThreadFactory(),
+            executor,
             if (multiProducer) ProducerType.MULTI else ProducerType.SINGLE,
             YieldingWaitStrategy())
 
@@ -47,27 +34,28 @@ class DisruptorExecutor<T>(multiProducer: Boolean = false) : Closeable {
         listen()
     }
 
-    suspend fun execute(task: AsyncTask<T>): Any {
+    private fun execute(task: AsyncTask<T>): DisruptorExecutor<T> {
         this.task = task
         disruptor.ringBuffer.publishEvent { wrapper, _ ->
             wrapper.task = task
         }
-        return task.await()
+        return this
     }
 
+    fun execute(data: T, handler: (T) -> Any) = execute(AsyncTask(data, handler))
+
     override fun close() {
-        task.end()
         disruptor.shutdown()
     }
 
     private fun listen(): RingBuffer<AsyncTaskWrapper<T>> {
         disruptor.handleEventsWith(EventHandler { taskWrapper, _, _ ->
-            taskWrapper.task.start(Unconfined)
+            taskWrapper.task.start()
         })
         return disruptor.start()
     }
 }
 
-class AsyncTaskWrapper<T> {
+private class AsyncTaskWrapper<T> {
     internal lateinit var task: AsyncTask<T>
 }

@@ -2,6 +2,7 @@ package cn.kona.event
 
 import cn.kona.AsyncTask
 import cn.kona.DisruptorExecutor
+import java.util.concurrent.Executors
 
 interface EventBus {
     fun publish(): EventBus
@@ -11,7 +12,7 @@ interface EventBus {
 
 class EventBusImpl internal constructor() : EventBus {
 
-    private val executor = DisruptorExecutor<EventTask<*>>(true)
+    private val executor = DisruptorExecutor<EventTask<*>>(Executors.newSingleThreadExecutor(), true)
 
     override fun publish(): EventBus {
         TODO()
@@ -26,4 +27,4 @@ class EventBusImpl internal constructor() : EventBus {
     }
 }
 
-class EventTask<T>(route: String, message: T) : AsyncTask<T>()
+class EventTask<T>(route: String, message: T)
