@@ -2,7 +2,7 @@ group 'cn.kona'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.4-3'
+    ext.kotlin_version = '1.1.50'
     ext.kotlinx_coroutines_version = '0.18'
     ext.disruptor_version = '3.3.6'
     ext.log4j_version = '2.9.0'
