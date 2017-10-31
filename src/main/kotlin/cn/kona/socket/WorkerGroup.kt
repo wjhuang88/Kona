@@ -67,6 +67,7 @@ internal class WorkerGroup(private val selector: Selector) : Closeable {
                 byteBuffer.clone().let { buf ->
                     launch(newSingleThreadContext("worker-reader")) {
                         log.info(String(buf.array()))
+                        // TODO: add Pipe logic to handle data, remove test code.
                         launch(newSingleThreadContext("worker-writer")) {
                             val fileChannel = FileInputStream("/Users/GHuang/WorkSpace/car-loan/web-admin/README.md").channel
                             it.write(ByteBuffer.wrap("HTTP/1.1 200 OK\nConnection: keep-alive\nContent-Length: ${fileChannel.size()}\n\n".toByteArray()))
