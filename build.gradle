@@ -2,15 +2,15 @@ group 'cn.kona'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.50'
-    ext.kotlinx_coroutines_version = '0.18'
+    ext.kotlin_version = '1.2.0'
+    ext.kotlinx_coroutines_version = '0.19.3'
     ext.disruptor_version = '3.3.6'
     ext.log4j_version = '2.9.0'
     ext.slf4j_version = '1.7.25'
     ext.jackson_version = '2.9.0'
+    ext.junit_version = '4.12'
 
     repositories {
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -34,7 +34,6 @@ mainClassName = 'cn.kona.App'
 sourceCompatibility = 1.8
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -48,7 +47,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:$slf4j_version"
     compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson_version"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: "$junit_version"
 }
 
 compileKotlin {

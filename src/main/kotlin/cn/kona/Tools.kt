@@ -8,3 +8,11 @@ import java.nio.ByteBuffer
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun ByteBuffer.clone(): ByteBuffer = ByteBuffer.allocate(this.remaining()).put(this)
+
+inline fun <T> MutableIterable<T>.forEachAndRemove(action: (T) -> Unit) = this.iterator().let {
+    while (it.hasNext()) {
+        val item = it.next()
+        it.remove()
+        action(item)
+    }
+}
