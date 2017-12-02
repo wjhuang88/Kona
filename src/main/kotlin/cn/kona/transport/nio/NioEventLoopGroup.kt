@@ -25,7 +25,7 @@ internal abstract class NioEventLoopGroup(private val n: Int) : EventLoopGroup {
                         key.cancel()
                     } else if (key.isReadable) {
                         (key.channel() as? SocketChannel)?.let {
-                            readBytes(getBuffer(), it)
+                            readBytes(getBuffer(), it, key.attachment())
                         }
                     }
                 }
@@ -33,7 +33,7 @@ internal abstract class NioEventLoopGroup(private val n: Int) : EventLoopGroup {
         }
     }
 
-    abstract fun readBytes(buffer: ByteBuffer, channel: SocketChannel)
+    abstract fun readBytes(buffer: ByteBuffer, channel: SocketChannel, attach: Any?)
 
     override fun run() {
         running.getAndSet(true)

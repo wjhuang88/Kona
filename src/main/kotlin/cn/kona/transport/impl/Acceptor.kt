@@ -2,12 +2,15 @@ package cn.kona.transport.impl
 
 import cn.kona.getLogger
 import cn.kona.transport.ChannelMeta
+import cn.kona.transport.Pipeline
 import cn.kona.transport.nio.NioEventLoop
 import java.nio.channels.SelectionKey
 import java.nio.channels.ServerSocketChannel
 import java.util.*
 
-internal class Acceptor(private val workerGroup: WorkerGroup = WorkerGroup()) : NioEventLoop() {
+internal class Acceptor
+    @JvmOverloads
+    constructor(private val pipeline: Pipeline, private val workerGroup: WorkerGroup = WorkerGroup()) : NioEventLoop() {
 
     private val log = getLogger()
 
@@ -20,7 +23,7 @@ internal class Acceptor(private val workerGroup: WorkerGroup = WorkerGroup()) : 
             val socketChannel = serverChannel?.accept()
             socketChannel?.configureBlocking(false)
             socketChannel?.let {
-                workerGroup.registerChannel(it, ChannelMeta(UUID.randomUUID().toString(), serverChannel))
+                workerGroup.registerChannel(it, ChannelMeta(UUID.randomUUID().toString(), serverChannel, pipeline))
                 log.debug("Accept a connection from {}", it.remoteAddress)
             }
         }
