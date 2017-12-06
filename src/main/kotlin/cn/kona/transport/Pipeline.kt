@@ -1,6 +1,6 @@
 package cn.kona.transport
 
-internal class Pipeline {
+internal class Pipeline(private val end: (Any) -> Unit) {
 
     private val bytePumper = BytePumper(this::startup)
 
@@ -17,7 +17,7 @@ internal class Pipeline {
             finalData = wrappedCell.cell.make(finalData)
             wrappedCell.next?.let { wrappedCell = it }
         }
-        wrappedCell.cell.make(finalData)
+        end(wrappedCell.cell.make(finalData))
     }
 
     fun pump(byte: Byte) = bytePumper.push(byte)

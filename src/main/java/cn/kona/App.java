@@ -4,7 +4,11 @@ import cn.kona.transport.Cell;
 import cn.kona.transport.Pipeline;
 import cn.kona.transport.impl.Acceptor;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.charset.Charset;
+import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -16,8 +20,11 @@ public class App {
         InetSocketAddress address = new InetSocketAddress(9999);
         ServerSocketChannel channel = ServerSocketChannel.open();
         channel.socket().bind(address);
-        Pipeline pipeline = new Pipeline();
-        pipeline.addCells(new TestCell("1"), new TestCell("2"), new TestCell("3"));
+        Pipeline pipeline = new Pipeline(data -> {
+            System.out.println(data);
+            return Unit.INSTANCE;
+        });
+        pipeline.addCells(new TestCell("1"));
         Acceptor acceptor = new Acceptor(pipeline);
         acceptor.registerChannel(channel, "boss");
         acceptor.run();
@@ -34,8 +41,8 @@ public class App {
         @NotNull
         @Override
         public Object make(@NotNull Object data) {
-            System.out.println("added " + num + "data " + data);
-            return "added " + num + "data " + data;
+            CharBuffer decode = Charset.forName("UTF-8").decode((ByteBuffer) data);
+            return "added " + num + " data " + decode;
         }
     }
 }
