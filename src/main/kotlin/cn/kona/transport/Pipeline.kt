@@ -1,8 +1,19 @@
 package cn.kona.transport
 
-internal class Pipeline(private val end: (Any) -> Unit) {
+/**
+ * Chained handlers to handle data
+ *
+ * @property end execute when chained cell finished
+ * @property bytePumper used to cache byte and pump right frame
+ *
+ * @author HuangWj
+ */
+internal class Pipeline(startByte: Byte = 0,
+                        endByte: Byte = '\n'.toByte(),
+                        noStart: Boolean = true,
+                        private val end: (Any) -> Unit) {
 
-    private val bytePumper = BytePumper(this::startup)
+    private val bytePumper = BytePumper(startByte, endByte, noStart, this::startup)
 
     private val startCell = ChainedCell(object : Cell {
         override fun make(data: Any): Any {
@@ -20,22 +31,26 @@ internal class Pipeline(private val end: (Any) -> Unit) {
         end(wrappedCell.cell.make(finalData))
     }
 
+    /**
+     * push a byte in
+     */
     fun pump(byte: Byte) = bytePumper.push(byte)
 
-    fun addCells(vararg cells: Cell) {
-        when {
-            cells.isEmpty() -> return
-            cells.size == 1 -> addToLast(ChainedCell(cells[0], null))
-            else -> {
-                val itr = cells.iterator()
-                var last = ChainedCell(itr.next(), null)
-                addToLast(last)
-                while (itr.hasNext()) {
-                    val current = itr.next()
-                    val wrapped = ChainedCell(current, null)
-                    last.next = wrapped
-                    last = wrapped
-                }
+    /**
+     * add some pipeline handle cells
+     */
+    fun addCells(vararg cells: Cell) = when {
+        cells.isEmpty() -> {}
+        cells.size == 1 -> addToLast(ChainedCell(cells[0], null))
+        else -> {
+            val itr = cells.iterator()
+            var last = ChainedCell(itr.next(), null)
+            addToLast(last)
+            while (itr.hasNext()) {
+                val current = itr.next()
+                val wrapped = ChainedCell(current, null)
+                last.next = wrapped
+                last = wrapped
             }
         }
     }

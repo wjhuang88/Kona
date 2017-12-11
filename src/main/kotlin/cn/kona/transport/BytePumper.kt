@@ -1,12 +1,11 @@
 package cn.kona.transport
 
-internal class BytePumper(private val callback: (Any) -> Unit) {
+internal class BytePumper(private val startByte: Byte,
+                          private val endByte: Byte,
+                          private val noStart: Boolean,
+                          private val callback: (Any) -> Unit) {
 
     private var frameStart = false
-
-    var startByte: Byte = '0'.toByte()
-    val endByte: Byte = '1'.toByte()
-    val noStart: Boolean = false
 
     private val bytePool = ByteGroup()
 

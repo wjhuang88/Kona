@@ -23,6 +23,7 @@ internal abstract class NioEventLoop(private var selector: Selector = Selector.o
 
     override fun run() {
         running.getAndSet(true)
+        log.debug("Starting main loop.")
         mainLoop(this::loopAction)
     }
 

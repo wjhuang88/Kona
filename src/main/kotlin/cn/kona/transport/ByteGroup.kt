@@ -4,6 +4,16 @@ import java.nio.ByteBuffer
 import java.util.*
 import kotlin.collections.ArrayList
 
+/**
+ * Instance of this class could combine a set of [ByteArray]s. You can push [Byte] to
+ * it without worry about the container size(will automatically increase)
+ *
+ * @property pool [ByteArray] container
+ * @property index the index now of [ByteArray] pool
+ * @property count byte count
+ *
+ * @author HuangWj
+ */
 class ByteGroup {
 
     companion object {
@@ -60,9 +70,7 @@ class ByteGroup {
     }
 
     fun clear() {
-        if (pool.size > 128) {
-            pool.clear()
-        }
+        // TODO: Maybe there's a memory leak if [pool] increased?
         index = 0
         count = 0
     }
