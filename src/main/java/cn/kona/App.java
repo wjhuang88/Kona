@@ -26,22 +26,15 @@ public class App {
     private static Logger log = LoggerFactory.getLogger("main");
 
     public static void main(String[] args) throws Exception {
-        TCP.create(null, 9999).registerHandler(new TestCell("0")).start();
+        TCP.create(null, 9999).registerHandler(TestCell.class).start();
     }
 
-    static class TestCell implements Cell {
+    public static class TestCell implements Cell {
 
-        private String num;
-
-        public TestCell(String num) {
-            this.num = num;
-        }
-
-        @NotNull
         @Override
         public Object make(@NotNull Object data) {
             CharBuffer decode = Charset.forName("UTF-8").decode((ByteBuffer) data);
-            return "added " + num + " data " + decode;
+            return "Received: " + decode;
         }
     }
 }

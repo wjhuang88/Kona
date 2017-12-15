@@ -1,5 +1,7 @@
 package cn.kona.transport
 
+import java.nio.channels.SocketChannel
+
 /**
  * Chained handlers to handle data
  *
@@ -8,12 +10,14 @@ package cn.kona.transport
  *
  * @author HuangWj
  */
-internal class Pipeline(startByte: Byte = 0,
-                        endByte: Byte = '\n'.toByte(),
-                        noStart: Boolean = true,
-                        private val end: (Any) -> Unit) {
+class Pipeline internal constructor(startByte: Byte = 0,
+                                    endByte: Byte = '\n'.toByte(),
+                                    noStart: Boolean = true,
+                                    private val end: (Any, SocketChannel) -> Unit) {
 
     private val bytePumper = BytePumper(startByte, endByte, noStart, this::startup)
+
+    private lateinit var thisChannel: SocketChannel
 
     private val startCell = ChainedCell(object : Cell {
         override fun make(data: Any): Any {
@@ -28,7 +32,10 @@ internal class Pipeline(startByte: Byte = 0,
             finalData = wrappedCell.cell.make(finalData)
             wrappedCell.next?.let { wrappedCell = it }
         }
-        end(wrappedCell.cell.make(finalData))
+        if (!this::thisChannel.isInitialized) {
+            throw IllegalStateException("Channel is not registered.")
+        }
+        end(wrappedCell.cell.make(finalData), thisChannel)
     }
 
     /**
@@ -53,6 +60,10 @@ internal class Pipeline(startByte: Byte = 0,
                 last = wrapped
             }
         }
+    }
+
+    internal fun setChannel(channel: SocketChannel) {
+        thisChannel = channel
     }
 
     private fun addToLast(chainedCell: ChainedCell) {

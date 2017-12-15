@@ -52,7 +52,6 @@ internal abstract class NioEventLoop(private var selector: Selector = Selector.o
     }
 
     private tailrec fun mainLoop(action: (SelectionKey) -> Unit) {
-
         val timeout = calculateTimeout()
         val before = System.nanoTime()
         doSelect(before, timeout, 0)

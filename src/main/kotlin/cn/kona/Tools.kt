@@ -16,3 +16,5 @@ inline fun <T> MutableIterable<T>.forEachAndRemove(action: (T) -> Unit) = this.i
         action(item)
     }
 }
+
+var systemCharset = Charsets.UTF_8
