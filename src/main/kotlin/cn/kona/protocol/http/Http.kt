@@ -9,13 +9,10 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.ServerSocketChannel
 
-class HTTPServer {
-
-}
+class HTTPServer
 
 private val log = LoggerFactory.getLogger(HTTPServer::class.java)
 
 fun create(host: String? = null, port: Int = 8080): HTTPServer {
-
-    return HTTPServer()
+    TODO("http resolver not be implemented")
 }
