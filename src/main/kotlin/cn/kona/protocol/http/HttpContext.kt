@@ -83,6 +83,17 @@ class HttpContext {
         return headersLines.getFirst(key.toLowerCase())
     }
 
+    internal fun reset() {
+        valid = false
+        started = false
+        ended = false
+        headersFinished = false
+        bodyRead = 0
+        contextLength = 0
+        headersLines.clear()
+        bodyLines.clear()
+    }
+
     // MARK: tools
 
     private fun readMeta(buffer: ByteBuffer): Boolean {
@@ -237,7 +248,7 @@ class HttpContext {
             println("protocol: $protocol")
             headersLines.forEach { println(it) }
             bodyLines.forEach { println("body: ${systemCharset.decode(it)}") }
-            ended = false
+            reset()
         }
     }
 }
