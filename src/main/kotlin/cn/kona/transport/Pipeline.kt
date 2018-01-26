@@ -1,5 +1,7 @@
 package cn.kona.transport
 
+import cn.kona.transport.pumper.BytePumper
+import java.nio.ByteBuffer
 import java.nio.channels.SocketChannel
 
 /**
@@ -10,22 +12,27 @@ import java.nio.channels.SocketChannel
  *
  * @author HuangWj
  */
-class Pipeline internal constructor(startByte: Byte = 0,
-                                    endByte: Byte = '\n'.toByte(),
-                                    noStart: Boolean = true,
+class Pipeline internal constructor(private val bytePumper: BytePumper,
                                     private val end: (Any, SocketChannel) -> Unit) {
 
-    private val bytePumper = BytePumper(startByte, endByte, noStart, this::startup)
+    init {
+        bytePumper.pipeline = this
+    }
 
     private lateinit var thisChannel: SocketChannel
 
-    private val startCell = ChainedCell(object : Cell {
+    private val startCell = ChainedCell(object : Cell() {
+
+        init {
+            this.pipeline = this@Pipeline
+        }
+
         override fun make(data: Any): Any {
             return data
         }
     }, null)
 
-    private fun startup(data: Any) {
+    internal fun startup(data: Any) {
         var finalData = startCell.cell.make(data)
         var wrappedCell = startCell
         while (null != wrappedCell.next) {
@@ -44,17 +51,27 @@ class Pipeline internal constructor(startByte: Byte = 0,
     fun pump(byte: Byte) = bytePumper.push(byte)
 
     /**
+     * flush all remaining data in pumper
+     */
+    fun flush(len: Int): ByteBuffer = bytePumper.flush(len)
+
+    /**
      * add some pipeline handle cells
      */
     fun addCells(vararg cells: Cell) = when {
         cells.isEmpty() -> {}
-        cells.size == 1 -> addToLast(ChainedCell(cells[0], null))
+        cells.size == 1 -> {
+            cells[0].pipeline = this
+            addToLast(ChainedCell(cells[0], null))
+        }
         else -> {
             val itr = cells.iterator()
             var last = ChainedCell(itr.next(), null)
+            last.cell.pipeline = this
             addToLast(last)
             while (itr.hasNext()) {
                 val current = itr.next()
+                current.pipeline = this
                 val wrapped = ChainedCell(current, null)
                 last.next = wrapped
                 last = wrapped

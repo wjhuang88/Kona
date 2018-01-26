@@ -1,6 +1,7 @@
 package cn.kona.transport.impl
 
 import cn.kona.getLogger
+import cn.kona.systemCharset
 import cn.kona.transport.ChannelMeta
 import cn.kona.transport.nio.NioEventLoopGroup
 import java.nio.ByteBuffer

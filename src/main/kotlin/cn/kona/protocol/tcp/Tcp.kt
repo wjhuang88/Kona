@@ -5,6 +5,9 @@ import cn.kona.systemCharset
 import cn.kona.transport.Cell
 import cn.kona.transport.PipelineBuilder
 import cn.kona.transport.impl.Acceptor
+import cn.kona.transport.pumper.BytePumper
+import cn.kona.transport.pumper.FrameBytePumperFactory
+import cn.kona.transport.pumper.PumperFactory
 import org.slf4j.LoggerFactory
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
@@ -17,7 +20,7 @@ class TCPServer internal constructor(private val pipeBuilder: PipelineBuilder,
                                      private val address: InetSocketAddress) {
 
     fun start() {
-        log.info("Prepared for server at $address")
+        log.info("Prepared server at $address")
         acceptor.run()
     }
 
@@ -32,9 +35,7 @@ class TCPServer internal constructor(private val pipeBuilder: PipelineBuilder,
 @JvmOverloads
 fun create(host: String? = null,
            port: Int = 8080,
-           start: Byte = 0,
-           end: Byte = '\n'.toByte(),
-           noStart: Boolean = true,
+           pumperFactory: PumperFactory<BytePumper> = FrameBytePumperFactory(),
            endHandler: (Any) -> Unit = System.out::println): TCPServer {
 
     log.info("Initiating tcp server.")
@@ -42,8 +43,7 @@ fun create(host: String? = null,
     val channel = ServerSocketChannel.open()
     channel.socket().bind(address)
 
-    val builder = PipelineBuilder()
-            .startByte(start).endByte(end).noStart(noStart).end { data, ch ->
+    val builder = PipelineBuilder().bytePumper(pumperFactory).end { data, ch ->
         when (data) {
             is ByteBuffer -> ch.write(data)
             is ByteArray -> ch.write(ByteBuffer.wrap(data))

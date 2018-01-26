@@ -18,3 +18,25 @@ inline fun <T> MutableIterable<T>.forEachAndRemove(action: (T) -> Unit) = this.i
 }
 
 var systemCharset = Charsets.UTF_8
+
+class MultiValuesMap<K, V> : LinkedHashMap<K, MutableList<V>> {
+
+    constructor() : super()
+    constructor(initialCapacity: Int, loadFactor: Float) : super(initialCapacity, loadFactor)
+    constructor(initialCapacity: Int) : super(initialCapacity)
+    constructor(m: MutableMap<out K, out MutableList<V>>?) : super(m)
+    constructor(initialCapacity: Int, loadFactor: Float, accessOrder: Boolean) : super(initialCapacity, loadFactor, accessOrder)
+
+    fun putValue(key: K, value: V) {
+        if (containsKey(key)) {
+            get(key)?.add(value)
+        } else {
+            put(key, mutableListOf(value))
+        }
+    }
+
+    fun getFirst(key: K): V? {
+        val values = get(key)
+        return values?.get(0)
+    }
+}

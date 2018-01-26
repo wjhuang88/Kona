@@ -5,10 +5,12 @@ package cn.kona.transport
  *
  * @author HuangWj
  */
-interface Cell {
+abstract class Cell {
+
+    lateinit var pipeline: Pipeline
 
     /**
      * Make data from source and delivery the returned data to next cell
      */
-    fun make(data: Any): Any
+    abstract fun make(data: Any): Any
 }

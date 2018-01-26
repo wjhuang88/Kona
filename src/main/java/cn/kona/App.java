@@ -1,5 +1,6 @@
 package cn.kona;
 
+import cn.kona.protocol.http.HTTP;
 import cn.kona.protocol.tcp.TCP;
 import cn.kona.transport.Cell;
 import cn.kona.transport.Pipeline;
@@ -26,15 +27,16 @@ public class App {
     private static Logger log = LoggerFactory.getLogger("main");
 
     public static void main(String[] args) throws Exception {
-        TCP.create(null, 9999).registerHandler(TestCell.class).start();
+        HTTP.create(null, 9999).start();
     }
 
-    public static class TestCell implements Cell {
+    public static class TestCell extends Cell {
 
         @Override
         public Object make(@NotNull Object data) {
             CharBuffer decode = Charset.forName("UTF-8").decode((ByteBuffer) data);
             return "Received: " + decode;
         }
+
     }
 }
