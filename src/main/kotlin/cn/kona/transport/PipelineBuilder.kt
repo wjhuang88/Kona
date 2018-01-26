@@ -2,15 +2,15 @@ package cn.kona.transport
 
 import cn.kona.transport.pumper.BytePumper
 import cn.kona.transport.pumper.PumperFactory
-import java.nio.channels.SocketChannel
+import java.nio.channels.SelectionKey
 import java.util.*
 
 class PipelineBuilder {
 
     private lateinit var _bytePumper: PumperFactory<BytePumper>
-    private var _end: (Any, SocketChannel) -> Unit = {_,_ ->}
+    private var _end: (Any, SelectionKey) -> Unit = {_,_ ->}
 
-    private lateinit var _thisChannel: SocketChannel
+    private lateinit var _thisKey: SelectionKey
 
     private val _cells: LinkedList<Class<out Cell>> = LinkedList()
 
@@ -19,13 +19,13 @@ class PipelineBuilder {
         return this
     }
 
-    fun end(value: (Any, SocketChannel) -> Unit): PipelineBuilder {
+    fun end(value: (Any, SelectionKey) -> Unit): PipelineBuilder {
         _end = value
         return this
     }
 
-    fun thisChannel(value: SocketChannel): PipelineBuilder {
-        _thisChannel = value
+    fun thisKey(value: SelectionKey): PipelineBuilder {
+        _thisKey = value
         return this
     }
 
@@ -35,8 +35,8 @@ class PipelineBuilder {
 
     fun create(): Pipeline {
         val pipeline = Pipeline(_bytePumper.create(), _end)
-        if (this::_thisChannel.isInitialized) {
-            pipeline.setChannel(_thisChannel)
+        if (this::_thisKey.isInitialized) {
+            pipeline.setKey(_thisKey)
         }
         _cells.listIterator().forEachRemaining {
             pipeline.addCells(it.newInstance())

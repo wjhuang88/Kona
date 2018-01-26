@@ -52,6 +52,7 @@ class HttpContextWriter : Cell() {
         if (data is HttpContext) {
             data.testGet()
         }
+        //return data
         return "HTTP/1.1 200 OK\nConnection: keep-alive\nContent-Length: 9\n\ntest res."
     }
 }

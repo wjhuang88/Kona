@@ -7,6 +7,6 @@ import java.util.concurrent.Executor
 
 interface EventLoop: Runnable, Executor, Closeable {
     fun loopAction(key: SelectionKey)
-    fun registerChannel(channel: Channel, attach: Any?)
+    fun registerChannel(channel: Channel, attach: Any?): SelectionKey?
     fun isRunning(): Boolean
 }

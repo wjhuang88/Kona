@@ -1,6 +1,7 @@
 package cn.kona.protocol.http
 
 import cn.kona.MultiValuesMap
+import cn.kona.getLogger
 import cn.kona.systemCharset
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
@@ -230,6 +231,7 @@ class HttpContext {
 
     internal fun testGet() {
         if (ended) {
+            getLogger().info("flag")
             println("method: $method")
             println("path: $path")
             println("protocol: $protocol")

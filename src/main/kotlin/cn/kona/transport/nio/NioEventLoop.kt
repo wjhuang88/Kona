@@ -41,14 +41,15 @@ internal abstract class NioEventLoop(private var selector: Selector = Selector.o
         return running.get()
     }
 
-    override fun registerChannel(channel: Channel, attach: Any?) {
+    override fun registerChannel(channel: Channel, attach: Any?): SelectionKey? {
         if (channel is SocketChannel) {
             channel.configureBlocking(false)
-            channel.register(selector, SelectionKey.OP_READ, attach)
+            return channel.register(selector, SelectionKey.OP_READ, attach)
         } else if (channel is ServerSocketChannel) {
             channel.configureBlocking(false)
-            channel.register(selector, SelectionKey.OP_ACCEPT, attach)
+            return channel.register(selector, SelectionKey.OP_ACCEPT, attach)
         }
+        return null
     }
 
     private tailrec fun mainLoop(action: (SelectionKey) -> Unit) {

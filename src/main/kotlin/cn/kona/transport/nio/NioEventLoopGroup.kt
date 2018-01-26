@@ -18,22 +18,25 @@ internal abstract class NioEventLoopGroup(private val n: Int) : EventLoopGroup {
 
     init {
         repeat(n) {
-            items.add(object : DirectBufferNioEventLoop() {
+            val children = object : DirectBufferNioEventLoop() {
                 override fun loopAction(key: SelectionKey) {
                     if (!isRunning()) {
                         key.channel().close()
                         key.cancel()
+                    } else if (key.isWritable) {
+                        writeBytes(key)
                     } else if (key.isReadable) {
-                        (key.channel() as? SocketChannel)?.let {
-                            readBytes(getBuffer(), it, key.attachment())
-                        }
+                        readBytes(getBuffer(), key)
                     }
                 }
-            })
+            }
+            items.add(children)
         }
     }
 
-    abstract fun readBytes(buffer: ByteBuffer, channel: SocketChannel, attach: Any?)
+    abstract fun readBytes(buffer: ByteBuffer, key: SelectionKey)
+
+    abstract fun writeBytes(key: SelectionKey)
 
     override fun run() {
         running.getAndSet(true)

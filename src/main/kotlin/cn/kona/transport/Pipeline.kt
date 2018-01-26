@@ -2,6 +2,7 @@ package cn.kona.transport
 
 import cn.kona.transport.pumper.BytePumper
 import java.nio.ByteBuffer
+import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 
 /**
@@ -13,13 +14,13 @@ import java.nio.channels.SocketChannel
  * @author HuangWj
  */
 class Pipeline internal constructor(internal val bytePumper: BytePumper,
-                                    private val end: (Any, SocketChannel) -> Unit) {
+                                    private val end: (Any, SelectionKey) -> Unit) {
 
     init {
         bytePumper.pipeline = this
     }
 
-    private lateinit var thisChannel: SocketChannel
+    private lateinit var thisKey: SelectionKey
 
     private val startCell = ChainedCell(object : Cell() {
 
@@ -39,10 +40,10 @@ class Pipeline internal constructor(internal val bytePumper: BytePumper,
             finalData = wrappedCell.cell.make(finalData)
             wrappedCell.next?.let { wrappedCell = it }
         }
-        if (!this::thisChannel.isInitialized) {
+        if (!this::thisKey.isInitialized) {
             throw IllegalStateException("Channel is not registered.")
         }
-        end(wrappedCell.cell.make(finalData), thisChannel)
+        end(wrappedCell.cell.make(finalData), thisKey)
     }
 
     /**
@@ -74,8 +75,8 @@ class Pipeline internal constructor(internal val bytePumper: BytePumper,
         }
     }
 
-    internal fun setChannel(channel: SocketChannel) {
-        thisChannel = channel
+    internal fun setKey(key: SelectionKey) {
+        thisKey = key
     }
 
     private fun addToLast(chainedCell: ChainedCell) {

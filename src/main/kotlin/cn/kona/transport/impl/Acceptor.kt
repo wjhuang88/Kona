@@ -24,8 +24,10 @@ internal class Acceptor
             val socketChannel = serverChannel?.accept()
             socketChannel?.configureBlocking(false)
             socketChannel?.let {
-                val pipeline = pipeBuilder.thisChannel(it).create()
-                workerGroup.registerChannel(it, ChannelMeta(UUID.randomUUID().toString(), serverChannel, pipeline))
+                val meta = ChannelMeta(UUID.randomUUID().toString(), serverChannel)
+                val registerKey = workerGroup.registerChannel(it, meta)
+                val pipeline = registerKey?.let { pipeBuilder.thisKey(it).create() }
+                meta.pipeline = pipeline
                 log.debug("Accept a connection from {}", it.remoteAddress)
             }
         }
