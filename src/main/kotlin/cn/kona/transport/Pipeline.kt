@@ -12,7 +12,7 @@ import java.nio.channels.SocketChannel
  *
  * @author HuangWj
  */
-class Pipeline internal constructor(private val bytePumper: BytePumper,
+class Pipeline internal constructor(internal val bytePumper: BytePumper,
                                     private val end: (Any, SocketChannel) -> Unit) {
 
     init {
@@ -49,11 +49,6 @@ class Pipeline internal constructor(private val bytePumper: BytePumper,
      * push a byte in
      */
     fun pump(byte: Byte) = bytePumper.push(byte)
-
-    /**
-     * flush all remaining data in pumper
-     */
-    fun flush(len: Int): ByteBuffer = bytePumper.flush(len)
 
     /**
      * add some pipeline handle cells

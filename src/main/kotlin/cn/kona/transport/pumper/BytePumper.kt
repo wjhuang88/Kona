@@ -8,6 +8,4 @@ abstract class BytePumper {
     internal lateinit var pipeline: Pipeline
 
     abstract fun push(b: Byte)
-
-    abstract fun flush(len: Int): ByteBuffer
 }

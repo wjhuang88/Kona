@@ -43,5 +43,4 @@ class PipelineBuilder {
         }
         return pipeline
     }
-
 }

@@ -1,39 +1,53 @@
 package cn.kona.transport.pumper
 
-import java.nio.ByteBuffer
-import kotlin.math.min
+class HttpBytePumper : BytePumper() {
 
-class HttpBytePumper(private val startByte: Byte,
-                     private val endByte: Byte,
-                     private val noStart: Boolean) : BytePumper() {
-
-    private var frameStart = false
+    private var bodyStart = false
+    private var flipped = false
 
     private val bytePool = ByteGroup()
 
+    private var bodyRemaining = 0
+
     override fun push(b: Byte) {
-        if (!frameStart && (noStart || b == startByte)) {
-            frameStart = true
+        if (!bodyStart) {
+            pushToHeader(b)
+        } else {
+            pushToBody(b)
         }
-        if (!frameStart || b == startByte) {
-            return
+    }
+
+    fun flip(len: Int) {
+        if (!flipped) {
+            flipped = true
+            bodyStart = true
+            bodyRemaining = len
         }
-        if (b == endByte) {
+    }
+
+    fun reset() {
+        bodyStart = false
+        flipped = false
+        bodyRemaining = 0
+    }
+
+    private fun pushToHeader(b: Byte) {
+        if (b == '\n'.toByte()) {
             val buffer = bytePool.flush()
             pipeline.startup(buffer)
-            frameStart = false
         } else {
             bytePool.put(b)
         }
     }
 
-    override fun flush(len: Int): ByteBuffer {
-        if (len <= 0) return ByteBuffer.allocate(0)
-
-        val buffer = bytePool.flush()
-        buffer.position(0)
-        buffer.limit(min(len, buffer.capacity()))
-        frameStart = false
-        return buffer
+    private fun pushToBody(b: Byte) {
+        if (bodyRemaining > 0) {
+            bytePool.put(b)
+            bodyRemaining--
+            if (bodyRemaining <= 0) {
+                val buffer = bytePool.flush()
+                pipeline.startup(buffer)
+            }
+        }
     }
 }

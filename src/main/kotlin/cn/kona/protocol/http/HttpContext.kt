@@ -23,7 +23,7 @@ class HttpContext {
 
     private var valid = false
     private var started = false
-    private var ended = false
+    internal var ended = false
     internal var headersFinished = false
     private var bodyRead = 0
 
@@ -47,6 +47,9 @@ class HttpContext {
         if (isDelimiter(buffer)) {
             headersFinished = true
             contextLength = readFirstHeader("content-length")?.toInt() ?: 0
+            if (contextLength <= 0) {
+                ended = true
+            }
             return
         }
 
@@ -64,8 +67,9 @@ class HttpContext {
             if (bodyRead < contextLength) {
                 bodyLines.add(buffer)
                 bodyRead += buffer.capacity()
-            } else {
-                ended = true
+                if (bodyRead >= contextLength) {
+                    ended = true
+                }
             }
         }
     }
@@ -230,7 +234,8 @@ class HttpContext {
             println("path: $path")
             println("protocol: $protocol")
             headersLines.forEach { println(it) }
-            bodyLines.forEach { println(systemCharset.decode(it)) }
+            bodyLines.forEach { println("body: ${systemCharset.decode(it)}") }
+            ended = false
         }
     }
 }

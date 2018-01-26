@@ -8,3 +8,9 @@ class FrameBytePumperFactory(private val startByte: Byte = 0,
         return FrameBytePumper(startByte, endByte, noStart)
     }
 }
+
+class HttpBytePumperFactory : PumperFactory<HttpBytePumper> {
+    override fun create(): HttpBytePumper {
+        return HttpBytePumper()
+    }
+}

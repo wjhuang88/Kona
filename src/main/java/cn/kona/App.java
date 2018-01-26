@@ -1,17 +1,6 @@
 package cn.kona;
 
 import cn.kona.protocol.http.HTTP;
-import cn.kona.protocol.tcp.TCP;
-import cn.kona.transport.Cell;
-import cn.kona.transport.Pipeline;
-import cn.kona.transport.impl.Acceptor;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.charset.Charset;
-import kotlin.Unit;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,15 +17,5 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         HTTP.create(null, 9999).start();
-    }
-
-    public static class TestCell extends Cell {
-
-        @Override
-        public Object make(@NotNull Object data) {
-            CharBuffer decode = Charset.forName("UTF-8").decode((ByteBuffer) data);
-            return "Received: " + decode;
-        }
-
     }
 }
